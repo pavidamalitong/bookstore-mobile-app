@@ -10,6 +10,7 @@ import LandingScreen from './screens/LandingScreen';
 import BookDetailScreen from './screens/BookDetailScreen';
 import CartScreen from './screens/CartScreen';
 import CheckoutScreen from './screens/CheckoutScreen';
+import SuccessScreen from './screens/SuccessScreen';
 
 export type RootStackParamList = {
   Signup: undefined;
@@ -18,10 +19,10 @@ export type RootStackParamList = {
   BookDetail: { bookId: number };
   Cart: undefined;
   Checkout: undefined;
+  Success: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
-const Tab = createBottomTabNavigator();
 
 const App = () => {
   return (
@@ -32,10 +33,11 @@ const App = () => {
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
         
         {/* Main Screens */}
-        <Stack.Screen name="Landing" component={LandingScreen} options={{ headerTitle: 'Bookstore' }} />
-        <Stack.Screen name="BookDetail" component={BookDetailScreen} options={{ headerTitle: 'Book Details' }} />
-        <Stack.Screen name="Cart" component={CartScreen} options={{ headerTitle: 'Cart' }} />
-        <Stack.Screen name="Checkout" component={CheckoutScreen} options={{ headerTitle: 'Checkout' }} />
+        <Stack.Screen name="Landing" component={LandingScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="BookDetail" component={BookDetailScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Cart" component={CartScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Checkout" component={CheckoutScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Success" component={SuccessScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
