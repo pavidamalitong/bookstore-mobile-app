@@ -5,6 +5,7 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 
 import CustomText from './CustomText';
 import { RootStackParamList } from '../App'; // Adjust the import path as needed
+import colors from '@/styles/colors';
 
 interface HeaderProps {
   headerName: string;
@@ -18,9 +19,9 @@ const Header: React.FC<HeaderProps> = ({ headerName, previousPage, bgColor = '#f
   return (
     <View style={[styles.container, { backgroundColor: bgColor }]}>
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate(previousPage as any)}>
-        <Icon name="arrow-left" size={24} color="#261E2A" />
+        <Icon name="arrow-left" size={24} color={colors.black} />
       </TouchableOpacity>
-      <CustomText style={styles.title}>{headerName}</CustomText>
+      <CustomText fontWeight='medium' fontSize={20} style={styles.title}>{headerName}</CustomText>
     </View>
   );
 };
@@ -30,7 +31,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingTop: 50,
+    paddingBottom: 20
   },
   backButton: {
     position: 'absolute',
@@ -39,8 +41,6 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
     textAlign: 'center',
     flex: 1,
   },
