@@ -18,7 +18,7 @@ const Header: React.FC<HeaderProps> = ({ headerName, previousPage, bgColor = '#f
 
   return (
     <View style={[styles.container, { backgroundColor: bgColor }]}>
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate(previousPage as any)}>
+      <TouchableOpacity onPress={() => navigation.navigate(previousPage as any)}>
         <Icon name="arrow-left" size={24} color={colors.black} />
       </TouchableOpacity>
       <CustomText fontWeight='medium' fontSize={20} style={styles.title}>{headerName}</CustomText>
@@ -31,14 +31,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 20
-  },
-  backButton: {
-    position: 'absolute',
-    left: 0,
-    bottom: 10,
-    padding: 10,
+    paddingBottom: 10
   },
   title: {
     textAlign: 'center',

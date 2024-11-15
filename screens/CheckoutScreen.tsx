@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, ScrollView, Image, StyleSheet } from 'react-native';
+import { View, ScrollView, Image, StyleSheet, SafeAreaView } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import CustomText from '@/components/CustomText';
@@ -11,7 +11,6 @@ import CustomButton from '@/components/CustomButton';
 type Props = NativeStackScreenProps<RootStackParamList, 'Checkout'>;
 
 const CheckoutScreen = ({ navigation }: Props) => {
-
   const [popupVisible, setPopupVisible] = useState(false);
 
   const fakeCartData = [
@@ -32,65 +31,57 @@ const CheckoutScreen = ({ navigation }: Props) => {
       imageUrl: 'https://reactnative.dev/img/tiny_logo.png',
       quantity: 3,
       checked: true,
-    }
+    },
   ];
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.lightGray }}>
+    <SafeAreaView style={styles.container}>
       <Header headerName="Checkout" previousPage="Landing" bgColor={colors.lightGray} />
       <ScrollView>
-      <View style={{ flex: 1, paddingHorizontal: 20 }}>
-        <CustomText fontWeight='medium' fontSize={20}>Order Summary</CustomText>
-        {/* Cart Items List */}
+        <CustomText fontWeight="medium" fontSize={20} style={{ paddingBottom: 10 }}>Order Summary</CustomText>
         {fakeCartData.map((item) => (
-          <View key={item.id} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5 }}>
-            <View style={{ flexDirection: 'row', height: 111, width: 350, borderRadius: 10, backgroundColor: colors.white, paddingLeft: 7, alignItems: 'center' }}>
-              <Image style={{ height: 98, width: 79, borderRadius: 10 }} source={{ uri: item.imageUrl }} />
-              <View style={{ flex: 1, paddingHorizontal: 10, paddingVertical: 7 }}>
-                  <View style={{ flex: 1, justifyContent: 'flex-start', paddingLeft: 5 }}>
-                    <CustomText fontWeight="medium" fontSize={18}>{item.title}</CustomText>
-                    <CustomText fontWeight="regular" fontSize={25}>฿ {item.price}</CustomText>
-                  </View>
-                  <View style={{ alignItems: 'flex-end'}}>
-                      <CustomText fontWeight="regular" fontSize={20}>x{item.quantity}</CustomText>
-                    </View>
-              </View>
+          <View key={item.id} style={styles.itemContainer}>
+            <Image style={styles.image} source={{ uri: item.imageUrl }} />
+            <View style={styles.itemDetails}>
+              <CustomText fontWeight="medium" fontSize={18}>{item.title}</CustomText>
+              <CustomText fontWeight="regular" fontSize={25}>฿ {item.price}</CustomText>
+              <CustomText fontWeight="regular" fontSize={20}>x{item.quantity}</CustomText>
             </View>
           </View>
         ))}
-        <View style={{ paddingVertical: 10 }}>
-          <CustomText fontWeight='medium' fontSize={20}>Customer details</CustomText>
-        </View>
-        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
-          <CustomText fontWeight="regular" fontSize={14} style={{ color: '#9F9F9F' }}>Email address</CustomText>
+
+        <CustomText fontWeight="medium" fontSize={20} style={styles.sectionTitle}>Customer Details</CustomText>
+        <View style={styles.row}>
+          <CustomText fontWeight="regular" fontSize={14} style={styles.label}>Email address</CustomText>
           <CustomText fontWeight="light" fontSize={14}>paza@gmail.com</CustomText>
         </View>
-        <View style={{ borderBottomColor: '#9F9F9F', borderBottomWidth: StyleSheet.hairlineWidth, paddingVertical: 10 }}/>
-        <View style={{ paddingVertical: 10 }}>
-          <CustomText fontWeight='medium' fontSize={20}>Payment</CustomText>
-        </View>
-        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
-          <CustomText fontWeight="regular" fontSize={14} style={{ color: '#9F9F9F' }}>Method</CustomText>
+        <View style={styles.separator} />
+
+        <CustomText fontWeight="medium" fontSize={20} style={styles.sectionTitle}>Payment</CustomText>
+        <View style={styles.row}>
+          <CustomText fontWeight="regular" fontSize={14} style={styles.label}>Method</CustomText>
           <CustomText fontWeight="light" fontSize={14}>Credit card</CustomText>
         </View>
-        <View style={{ borderBottomColor: '#9F9F9F', borderBottomWidth: StyleSheet.hairlineWidth, paddingVertical: 10 }}/>
-        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', paddingTop: 10 }}>
-          <CustomText fontWeight="regular" fontSize={14} style={{ color: '#9F9F9F' }}>Subtotal</CustomText>
+        <View style={styles.separator} />
+
+        <View style={styles.row}>
+          <CustomText fontWeight="regular" fontSize={14} style={styles.label}>Subtotal</CustomText>
           <CustomText fontWeight="light" fontSize={14}>฿ 3897</CustomText>
         </View>
-        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
-          <CustomText fontWeight="regular" fontSize={14} style={{ color: '#9F9F9F' }}>Shipping fee</CustomText>
+        <View style={styles.row}>
+          <CustomText fontWeight="regular" fontSize={14} style={styles.label}>Shipping fee</CustomText>
           <CustomText fontWeight="light" fontSize={14}>Free</CustomText>
         </View>
-        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', paddingTop: 10 }}>
+        <View style={styles.row}>
           <CustomText fontWeight="medium" fontSize={20}>Total</CustomText>
           <CustomText fontWeight="medium" fontSize={25}>฿ 3897</CustomText>
         </View>
-      </View>
       </ScrollView>
-      <View style={{ flex: 1, justifyContent: 'flex-end', paddingBottom: 40 }}>
+
+      <View style={styles.footer}>
         <CustomButton text="Place Order" onPress={() => setPopupVisible(true)} />
       </View>
+
       <ConfirmPopup
         visible={popupVisible}
         onCancel={() => setPopupVisible(false)}
@@ -99,8 +90,58 @@ const CheckoutScreen = ({ navigation }: Props) => {
           navigation.navigate('Success');
         }}
       />
-    </View>
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.lightGray,
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  itemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 5,
+    height: 111,
+    width: 350,
+    borderRadius: 10,
+    backgroundColor: colors.white,
+    padding: 7,
+  },
+  image: {
+    height: 98,
+    width: 79,
+    borderRadius: 10,
+  },
+  itemDetails: {
+    flex: 1,
+    paddingHorizontal: 10,
+    justifyContent: 'space-between',
+  },
+  sectionTitle: {
+    paddingVertical: 10,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 5,
+  },
+  label: {
+    color: '#9F9F9F',
+  },
+  separator: {
+    borderBottomColor: '#9F9F9F',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    marginVertical: 10,
+  },
+  footer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    paddingBottom: 40,
+  },
+});
 
 export default CheckoutScreen;
