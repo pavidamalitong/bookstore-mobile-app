@@ -17,7 +17,7 @@ export type RootStackParamList = {
   Landing: undefined;
   BookDetail: { bookId: number };
   Cart: undefined;
-  Checkout: undefined;
+  Checkout: { checkedOrderIDs: string[]; totalPrice: number };
   Success: undefined;
 };
 

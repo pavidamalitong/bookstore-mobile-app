@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 import { CheckBox } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Feather';
@@ -10,38 +10,183 @@ import colors from '@/styles/colors';
 import CustomButton from '@/components/CustomButton';
 import CustomText from '@/components/CustomText';
 
+import { getDatabase, ref, remove, set, get } from 'firebase/database';
+import { app } from '../FirebaseConfig'
+
 type Props = NativeStackScreenProps<RootStackParamList, 'Cart'>;
 
-const fakeCartData = [
-  { id: 1, title: 'Product 1', price: 650, availability: 30, imageUrl: 'https://reactnative.dev/img/tiny_logo.png', quantity: 1, checked: false },
-  { id: 2, title: 'Product 2', price: 1200, availability: 0, imageUrl: 'https://reactnative.dev/img/tiny_logo.png', quantity: 2, checked: true },
-  { id: 3, title: 'Product 3', price: 850, availability: 50, imageUrl: 'https://reactnative.dev/img/tiny_logo.png', quantity: 1, checked: false },
-  { id: 4, title: 'Product 4', price: 499, availability: 20, imageUrl: 'https://reactnative.dev/img/tiny_logo.png', quantity: 3, checked: true },
-  { id: 5, title: 'Product 5', price: 999, availability: 10, imageUrl: 'https://reactnative.dev/img/tiny_logo.png', quantity: 1, checked: false },
-];
-
 const CartScreen = ({ navigation }: Props) => {
+
+  const [cartItems, setCartItems] = useState<any[]>([]);
+  const [selectAll, setSelectAll] = useState<boolean>(false);
+  const userID = 'userID';
+  
+  const db = getDatabase(app);
+
+  const fetchCartData = async () => {
+    const cartRef = ref(db, `cart/${userID}`);
+  
+    try {
+      const snapshot = await get(cartRef);
+      const userCartData = snapshot.val();
+  
+      if (userCartData) {
+        const items: any[] = [];
+  
+        for (const orderID of Object.keys(userCartData)) {
+          const order = userCartData[orderID];
+          const bookId = order.bookID;
+  
+          // Fetch book details
+          const bookRef = ref(db, `books/${bookId}`);
+          const bookSnapshot = await get(bookRef);
+          const bookDetails = bookSnapshot.val();
+  
+          if (bookDetails) {
+            items.push({
+              id: orderID,
+              bookId: bookId,
+              quantity: order.amount,
+              checked: false,
+              title: bookDetails.Title,
+              price: bookDetails.Price,
+              availability: bookDetails.Amount,
+              imageUrl: bookDetails.Thumbnail,
+            });
+          }
+        }
+  
+        setCartItems(items);
+      } else {
+        setCartItems([]);
+      }
+    } catch (error) {
+      console.error('Error fetching cart data:', error);
+    }
+  };  
+
+  const increaseQuantity = async (orderID: string, currentQuantity: number, availability: number) => {
+    if (currentQuantity < availability) {
+      const orderRef = ref(db, `cart/${userID}/${orderID}/amount`);
+      try {
+        await set(orderRef, currentQuantity + 1);
+  
+        // Update the local state manually
+        setCartItems((prevItems) =>
+          prevItems.map((item) =>
+            item.id === orderID ? { ...item, quantity: item.quantity + 1 } : item
+          )
+        );
+      } catch (error) {
+        console.error('Error increasing quantity:', error);
+      }
+    }
+  };  
+  
+  const decreaseQuantity = async (orderID: string, currentQuantity: number, availability: number) => {
+    if (currentQuantity > 1) {
+      const orderRef = ref(db, `cart/${userID}/${orderID}/amount`);
+      try {
+        await set(orderRef, currentQuantity - 1);
+  
+        // Update the local state manually
+        setCartItems((prevItems) =>
+          prevItems.map((item) =>
+            item.id === orderID ? { ...item, quantity: item.quantity - 1 } : item
+          )
+        );
+      } catch (error) {
+        console.error('Error increasing quantity:', error);
+      }
+    }
+  }; 
+
+  const deleteItem = async (orderID: string) => {
+    const orderRef = ref(db, `cart/${userID}/${orderID}`);
+    try {
+      // Delete from the backend first
+      await remove(orderRef);
+  
+      // Remove the item from the front-end cartItems state
+      const updatedCartItems = cartItems.filter(item => item.id !== orderID);
+      setCartItems(updatedCartItems);
+  
+      // Check if all items are checked, and update selectAll if needed
+      const allChecked = updatedCartItems.every(item => item.checked);
+      setSelectAll(allChecked);
+      
+    } catch (error) {
+      console.error('Error deleting order:', error);
+    }
+  };  
+
+  const toggleChecked = async (orderID: string) => {
+    const updatedItems = cartItems.map((item) =>
+      item.id === orderID && item.availability > 0
+        ? { ...item, checked: !item.checked }
+        : item
+    );
+  
+    // Check if all items are checked
+    const allChecked = updatedItems.every(item => item.availability <= 0 || item.checked);
+  
+    // Update state
+    setCartItems(updatedItems);
+    setSelectAll(allChecked);
+  };  
+
+  const toggleSelectAll = async (isSelected: boolean) => {
+    const updatedItems = cartItems.map((item) =>
+      item.availability > 0 ? { ...item, checked: isSelected } : item
+    );
+    setSelectAll(isSelected);
+    setCartItems(updatedItems);
+  };
+
+  const calculateTotalPrice = () => {
+    return cartItems
+      .filter((item) => item.checked)
+      .reduce((total, item) => total + item.price * item.quantity, 0);
+  };
+
+  // Effect to Fetch Cart Data
+  useEffect(() => {
+    fetchCartData();
+  }, [userID]);
+
   return (
     <SafeAreaView style={styles.container}>
       <Header headerName="Cart" previousPage="Landing" bgColor={colors.lightGray} />
+      {cartItems.length > 0 ?
+      <>
       <ScrollView>
         <View style={styles.cartContainer}>
           <View style={styles.selectAllContainer}>
-            <CheckBox checked={true} checkedColor={colors.darkPurple} uncheckedColor={colors.darkPurple} containerStyle={styles.checkBox} />
+            <CheckBox
+              checked={selectAll}
+              checkedColor={colors.darkPurple}
+              uncheckedColor={colors.darkPurple}
+              containerStyle={styles.checkBox}
+              onPress={() => {
+                toggleSelectAll(!selectAll);
+              }} />
             <CustomText fontWeight="medium" fontSize={16} style={styles.selectAllText}>Select all</CustomText>
           </View>
 
           {/* Cart Items List */}
-          {fakeCartData.map((item) => (
+          {cartItems.map((item) => (
             <View key={item.id} style={styles.cartItem}>
-              {item.availability > 0 ?
-              <CheckBox
-                checked={item.checked}
-                checkedColor={colors.darkPurple}
-                uncheckedColor={colors.darkGray}
-                containerStyle={styles.checkBox}
-              />
-              : <View style={{width: 44}} />}
+              {item.availability > 0 ? (
+                <CheckBox
+                  checked={item.checked}
+                  checkedColor={colors.darkPurple}
+                  uncheckedColor={colors.darkGray}
+                  containerStyle={styles.checkBox}
+                  onPress={() => toggleChecked(item.id)}
+                />
+              ) : (
+                <View style={{ width: 44 }} />
+              )}
               <View style={styles.itemContainer}>
                 <Image style={styles.itemImage} source={{ uri: item.imageUrl }} />
                 <View style={styles.itemDetails}>
@@ -51,39 +196,76 @@ const CartScreen = ({ navigation }: Props) => {
                       <CustomText fontWeight="regular" fontSize={20}>฿ {item.price}</CustomText>
                       {item.availability > 0 && <CustomText fontWeight="light" fontSize={13}>Availability: {item.availability}</CustomText>}
                     </View>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => deleteItem(item.id)}>
                       <Icon name="trash" size={24} color={colors.darkPurple} />
                     </TouchableOpacity>
                   </View>
                   <View style={styles.quantityContainer}>
-                    {item.availability > 0 ?
-                    <>
-                      <TouchableOpacity style={styles.circleButton}>
-                        <Icon name="minus" size={12} color={colors.white} />
-                      </TouchableOpacity>
-                      <View style={styles.quantityText}>
-                        <CustomText fontWeight="medium" fontSize={15}>{item.quantity}</CustomText>
-                      </View>
-                      <TouchableOpacity style={styles.circleButton}>
+                    {item.availability > 0 ? (
+                      <>
+                        <TouchableOpacity
+                          style={[styles.circleButton, item.quantity <= 1 && { backgroundColor: colors.darkGray }]}
+                          disabled={item.quantity <= 1}
+                          onPress={() => decreaseQuantity(item.id, item.quantity, item.availability)}
+                        >
+                          <Icon name="minus" size={12} color={colors.white} />
+                        </TouchableOpacity>
+                        <View style={styles.quantityText}>
+                          <CustomText fontWeight="medium" fontSize={15}>{item.quantity}</CustomText>
+                        </View>
+                        <TouchableOpacity
+                          style={[styles.circleButton, item.quantity >= item.availability && { backgroundColor: colors.darkGray }]}
+                          disabled={item.quantity >= item.availability}
+                          onPress={() => increaseQuantity(item.id, item.quantity, item.availability)}
+                        >
                           <Icon name="plus" size={12} color={colors.white} />
-                      </TouchableOpacity>
-                    </> :
-                    <CustomText fontWeight='regular' fontSize={15} style={{ color: '#F71212'}}>Out of stock</CustomText>}
-                  </View>
+                        </TouchableOpacity>
+                      </>
+                    ) : (
+                      <CustomText fontWeight="regular" fontSize={15} style={{ color: '#F71212' }}>Out of stock</CustomText>
+                    )}
                 </View>
               </View>
             </View>
-          ))}
+          </View>
+        ))}
         </View>
       </ScrollView>
 
       <View style={styles.footer}>
         <View style={styles.totalContainer}>
           <CustomText fontWeight="medium" fontSize={20}>Total</CustomText>
-          <CustomText fontWeight="semiBold" fontSize={25}>฿ 650</CustomText>
+          <CustomText fontWeight="semiBold" fontSize={25}>฿ {calculateTotalPrice()}</CustomText>
         </View>
-        <CustomButton text="Checkout" onPress={() => navigation.navigate('Checkout')} />
+        <CustomButton
+          text="Checkout"
+          onPress={() => {
+            const checkedItems = cartItems.filter(item => item.checked);
+            const checkedOrderIDs = checkedItems.map(item => item.id);
+            const totalPrice = calculateTotalPrice();
+
+            // Navigate to CheckoutScreen and pass the checkedOrderIDs and totalPrice
+            navigation.navigate('Checkout', {
+              checkedOrderIDs,
+              totalPrice,
+            });
+          }}
+          disabled={cartItems.filter(item => item.checked).length === 0}
+        />
       </View>
+      </>
+      :
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+        <CustomText fontWeight='semiBold' fontSize={26}>Your cart is empty</CustomText>
+        <Icon name="shopping-cart" size={99} color={colors.black} style={{ paddingVertical: 30}}/>
+        <TouchableOpacity
+          style={styles.exploreBookContainer}
+          onPress={() => navigation.navigate('Landing')}
+        >
+          <CustomText fontWeight="semiBold" fontSize={20} style={{ color: colors.black }}>Explore books</CustomText>
+        </TouchableOpacity>
+      </View>
+      }
     </SafeAreaView>
   );
 };
@@ -116,22 +298,22 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     flexDirection: 'row',
-    height: 139,
+    height: '100%',
     width: 315,
     borderRadius: 10,
     backgroundColor: colors.white,
+    paddingVertical: 7,
     paddingLeft: 7,
     alignItems: 'center',
   },
   itemImage: {
-    height: 126,
+    height: '100%',
     width: 102,
     borderRadius: 10,
   },
   itemDetails: {
     flex: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
+    paddingHorizontal: 7,
   },
   itemHeader: {
     flexDirection: 'row',
@@ -176,6 +358,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     backgroundColor: colors.white,
   },
+  exploreBookContainer: {
+    width: 186,
+    height: 51,
+    backgroundColor: colors.white,
+    borderWidth: 3,
+    borderColor: colors.black,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  }
 });
 
 export default CartScreen;
