@@ -90,7 +90,10 @@ const LandingScreen = ({ navigation }: Props) => {
         data={filteredBooks}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.bookCardBox}>
+          <TouchableOpacity
+            style={styles.bookCardBox}
+            onPress={() => navigation.navigate('BookDetail', { bookId: item.id })}
+          >
             <Image
               source={{ uri: item.Thumbnail }}
               style={{ width: 80, height: '100%', borderRadius: 10 }}
@@ -100,12 +103,18 @@ const LandingScreen = ({ navigation }: Props) => {
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <View style={{ width: '75%' }}>
-                  <CustomText fontWeight='medium' style={{ color: colors.black }}>{item.Title}</CustomText>
+                  <CustomText fontWeight="medium" style={{ color: colors.black }}>
+                    {item.Title}
+                  </CustomText>
                   <CustomText fontSize={13}>{item.Author}</CustomText>
-                  <CustomText fontSize={10} style={{ color: colors.whiteGray }}>Publisher: {item.Publisher}</CustomText>
-                  <CustomText fontSize={10} style={{ color: colors.whiteGray }}>ISBN: {item.ISBN}</CustomText>
+                  <CustomText fontSize={10} style={{ color: colors.whiteGray }}>
+                    Publisher: {item.Publisher}
+                  </CustomText>
+                  <CustomText fontSize={10} style={{ color: colors.whiteGray }}>
+                    ISBN: {item.ISBN}
+                  </CustomText>
                 </View>
-                <CustomText fontSize={14} style={{ color: colors.yellow}}>
+                <CustomText fontSize={14} style={{ color: colors.yellow }}>
                   <Feather name="star" size={14} color={colors.yellow} />
                   {" "}
                   {item.Rating}
@@ -117,8 +126,12 @@ const LandingScreen = ({ navigation }: Props) => {
                 {item.Amount > 0 ? (
                   <>
                     <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8 }}>
-                      <CustomText fontSize={25} style={{ color: colors.black }}>฿ {item.Price}</CustomText>
-                      <CustomText fontSize={13} style={{ color: colors.whiteGray }}>Stock: {item.Amount}</CustomText>
+                      <CustomText fontSize={25} style={{ color: colors.black }}>
+                        ฿ {item.Price}
+                      </CustomText>
+                      <CustomText fontSize={13} style={{ color: colors.whiteGray }}>
+                        Stock: {item.Amount}
+                      </CustomText>
                     </View>
                     <CartButton
                       bg_color={colors.lightGray}
@@ -127,14 +140,16 @@ const LandingScreen = ({ navigation }: Props) => {
                     />
                   </>
                 ) : (
-                  <CustomText fontSize={15} style={{ color: colors.red, paddingVertical: 5 }}>Out of Stock</CustomText>
+                  <CustomText fontSize={15} style={{ color: colors.red, paddingVertical: 5 }}>
+                    Out of Stock
+                  </CustomText>
                 )}
               </View>
-
             </View>
-          </View>
+          </TouchableOpacity>
         )}
       />
+
     </SafeAreaView>
   );
 };
