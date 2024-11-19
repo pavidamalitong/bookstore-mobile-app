@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, SafeAreaView, TextInput, FlatList } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet, SafeAreaView, TextInput, FlatList, Modal, TouchableWithoutFeedback } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import Feather from '@expo/vector-icons/Feather';
@@ -9,15 +9,16 @@ import colors from '@/styles/colors';
 import CartButton from '@/components/CartButton';
 
 import { getDatabase, ref, onValue } from 'firebase/database';
-import { app } from '../FirebaseConfig'
-
+import { app } from '../FirebaseConfig';
+import AddToCart from '@/components/AddToCart';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Landing'>;
 
 const LandingScreen = ({ navigation }: Props) => {
-
   const [books, setBooks] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBookId, setSelectedBookId] = useState<number | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     const db = getDatabase(app);
@@ -52,7 +53,18 @@ const LandingScreen = ({ navigation }: Props) => {
     );
   });
 
+  const handleAddToCartPress = (bookId: number) => {
+    const selectedBook = books.find(book => book.id === bookId);
+    if (selectedBook) {
+      setSelectedBookId(bookId);
+      setModalVisible(true);
+    }
+  };
 
+
+  const closeModal = () => {
+    setModalVisible(false);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -136,7 +148,7 @@ const LandingScreen = ({ navigation }: Props) => {
                     <CartButton
                       bg_color={colors.lightGray}
                       border_color={colors.darkPurple}
-                      onPress={() => console.log('click cart', item.Title)}
+                      onPress={() => handleAddToCartPress(item.id)}
                     />
                   </>
                 ) : (
@@ -150,6 +162,27 @@ const LandingScreen = ({ navigation }: Props) => {
         )}
       />
 
+      {/* Modal for Add to Cart */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={closeModal}
+      >
+        <TouchableWithoutFeedback onPress={closeModal}>
+          <View style={styles.overlay}>
+            <TouchableWithoutFeedback onPress={() => { }}>
+              <View>
+                {selectedBookId !== null && (
+                  <AddToCart
+                    book={books.find(book => book.id === selectedBookId)}
+                    closeModal={closeModal} />
+                )}
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -211,6 +244,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 7,
     marginBottom: 10
+  },
+  overlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
   }
 });
 

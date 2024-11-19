@@ -15,7 +15,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Checkout'>;
 
 const CheckoutScreen = ({ route, navigation }: Props) => {
   const { checkedOrderIDs, totalPrice } = route.params;
-  const userID = 'userID';
+  const userID = 'test123';
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [popupVisible, setPopupVisible] = useState(false);
 

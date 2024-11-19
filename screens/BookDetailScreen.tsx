@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Image, View, SafeAreaView, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
+import { Image, View, SafeAreaView, ActivityIndicator, StyleSheet, ScrollView, TouchableWithoutFeedback, Modal } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -7,6 +7,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Header from '../components/Header';
 import CustomText from '../components/CustomText';
 import CustomButton from '@/components/CustomButton';
+import AddToCart from '@/components/AddToCart';
 import colors from '@/styles/colors';
 import { getDatabase, ref, get } from 'firebase/database';
 import { app } from '../FirebaseConfig';
@@ -19,6 +20,7 @@ const BookDetailScreen = ({ route, navigation }: Props) => {
   // State to hold the book data and loading state
   const [bookData, setBookData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
 
   // Fetch book data when the component mounts
   useEffect(() => {
@@ -37,6 +39,10 @@ const BookDetailScreen = ({ route, navigation }: Props) => {
       setLoading(false);
     });
   }, [bookId]);
+
+  const closeModal = () => {
+    setModalVisible(false);
+  };
 
   // If still loading, show a loading spinner
   if (loading) {
@@ -89,19 +95,40 @@ const BookDetailScreen = ({ route, navigation }: Props) => {
                 <CustomText fontSize={14}>{bookData.Amount}</CustomText>
               </View>
             </View>
-            <View style={{marginBottom: 30}}>
+            <View style={{ marginBottom: 30 }}>
               <CustomText fontSize={20} fontWeight='mediumItalic' style={{ color: colors.darkPurple, marginBottom: 8 }}>Description</CustomText>
               <CustomText>{bookData.Description}</CustomText>
             </View>
           </ScrollView>
-          <CustomButton 
+          <CustomButton
             text='Add to Cart'
-            onPress={() => console.log("details add")}
-            disabled={ bookData.Amount <= 0}/>
+            onPress={() => setModalVisible(true)}
+            disabled={bookData.Amount <= 0} />
         </View>
       ) : (
         <CustomText>Book data not available.</CustomText>
       )}
+
+      {/* Modal for Add to Cart */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={closeModal}
+      >
+        <TouchableWithoutFeedback onPress={closeModal}>
+          <View style={styles.overlay}>
+            <TouchableWithoutFeedback onPress={() => { }}>
+              <View>
+                <AddToCart
+                  book={{ ...bookData, id: bookId }}
+                  closeModal={closeModal} />
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
     </SafeAreaView>
   );
 };
@@ -121,6 +148,11 @@ const styles = StyleSheet.create({
   subDetailCon: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  overlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
     alignItems: 'center',
   }
 });
