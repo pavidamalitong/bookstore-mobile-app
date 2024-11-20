@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+// import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 // Import Screens
 import SignupScreen from './screens/SignupScreen';
@@ -28,8 +29,8 @@ const App = () => {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Signup">
         {/* Auth Screens */}
-        <Stack.Screen name="Signup" component={SignupScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Signup" component={SignupScreen} options={{ headerShown: false, gestureEnabled: false }} />
+        <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false , gestureEnabled: false}} />
         
         {/* Main Screens */}
         <Stack.Screen name="Landing" component={LandingScreen} options={{ headerShown: false }} />
