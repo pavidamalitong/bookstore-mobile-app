@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Image, StyleSheet, View, TouchableOpacity, Alert } from 'react-native';
 import { getDatabase, ref, get, set, update } from 'firebase/database';
-import { app } from '../FirebaseConfig';
+import { app, auth } from '../FirebaseConfig';
 import colors from '@/styles/colors';
 import AntDesign from '@expo/vector-icons/AntDesign';
 
@@ -15,7 +15,7 @@ interface AddToCartProps {
 
 const AddToCart: React.FC<AddToCartProps> = ({ book, closeModal }) => {
     const [selectedAmount, setSelectedAmount] = useState(1)
-    const userID = "test123" // mock user id for test
+    const userID = auth.currentUser?.uid
 
     const handleAddOrder = async () => {
         try {
@@ -77,7 +77,6 @@ const AddToCart: React.FC<AddToCartProps> = ({ book, closeModal }) => {
             closeModal();
         } catch (error) {
             Alert.alert("Error", "Failed to add item to cart. Please try again.");
-            console.error("Failed to add/update order:", error);
         }
     };
 

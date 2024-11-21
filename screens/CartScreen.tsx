@@ -11,7 +11,7 @@ import CustomButton from '@/components/CustomButton';
 import CustomText from '@/components/CustomText';
 
 import { getDatabase, ref, remove, set, get } from 'firebase/database';
-import { app } from '../FirebaseConfig'
+import { app, auth } from '../FirebaseConfig'
 import { AntDesign } from '@expo/vector-icons';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Cart'>;
@@ -20,7 +20,7 @@ const CartScreen = ({ navigation }: Props) => {
 
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [selectAll, setSelectAll] = useState<boolean>(false);
-  const userID = 'test123';
+  const userID = auth.currentUser?.uid;
 
   const db = getDatabase(app);
 
@@ -195,7 +195,7 @@ const CartScreen = ({ navigation }: Props) => {
                         <View style={styles.itemInfo}>
                           <CustomText fontWeight="medium" fontSize={16}>{item.title}</CustomText>
                           <CustomText fontWeight="regular" fontSize={20}>฿ {item.price}</CustomText>
-                          {item.availability > 0 && <CustomText fontWeight="light" fontSize={13}>Availability: {item.availability}</CustomText>}
+                          {item.availability > 0 && <CustomText fontWeight="light" fontSize={13}>Stock: {item.availability}</CustomText>}
                         </View>
                         <TouchableOpacity onPress={() => deleteItem(item.id)}>
                           <Icon name="trash" size={24} color={colors.darkPurple} />

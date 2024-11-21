@@ -39,7 +39,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       Alert.alert("Success", "Login successful!");
-      navigation.navigate("Success");
+      navigation.navigate("Landing");
     } catch (error: any) {
       switch (error.code) {
         case "auth/invalid-credential":

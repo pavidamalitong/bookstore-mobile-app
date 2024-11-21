@@ -27,8 +27,8 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
       setPassword("");
       setConfirmPassword("");
     });
-  
-    return unsubscribe; 
+
+    return unsubscribe;
   }, [navigation]);
 
   const validateEmail = (email: string) => {
@@ -69,7 +69,6 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
       navigation.navigate("Login");
     } catch (error: any) {
       Alert.alert("Signup Error", error.message);
-      console.error("Signup Error:", error.message);
     }
   };
 

@@ -9,13 +9,13 @@ import ConfirmPopup from '@/components/ConfirmPopup';
 import CustomButton from '@/components/CustomButton';
 
 import { getDatabase, ref, onValue, DataSnapshot, remove, set } from 'firebase/database';
-import { app } from '../FirebaseConfig'
+import { app, auth } from '../FirebaseConfig'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Checkout'>;
 
 const CheckoutScreen = ({ route, navigation }: Props) => {
   const { checkedOrderIDs, totalPrice } = route.params;
-  const userID = 'test123';
+  const userID = auth.currentUser?.uid;
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [popupVisible, setPopupVisible] = useState(false);
 
@@ -135,7 +135,6 @@ const CheckoutScreen = ({ route, navigation }: Props) => {
           };
   
           await set(bookRef, updatedBookData);
-          console.log(`Updated stock for book ID: ${bookId} to ${newStock}`);
         } catch (error) {
           console.error(`Error updating stock for order:`, error);
         }
@@ -146,7 +145,6 @@ const CheckoutScreen = ({ route, navigation }: Props) => {
         try {
           const orderRef = ref(db, `cart/${userID}/${orderID}`);
           await remove(orderRef);
-          console.log(`Deleted order ID: ${orderID}`);
         } catch (error) {
           console.error(`Error deleting order ID ${orderID}:`, error);
         }
@@ -182,7 +180,7 @@ const CheckoutScreen = ({ route, navigation }: Props) => {
         <CustomText fontWeight="medium" fontSize={20} style={styles.sectionTitle}>Customer Details</CustomText>
         <View style={styles.row}>
           <CustomText fontWeight="regular" fontSize={14} style={styles.label}>Email address</CustomText>
-          <CustomText fontWeight="light" fontSize={14}>paza@gmail.com</CustomText>
+          <CustomText fontWeight="light" fontSize={14}>{auth.currentUser?.email}</CustomText>
         </View>
         <View style={styles.separator} />
 
