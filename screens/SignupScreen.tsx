@@ -68,7 +68,11 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
       Alert.alert("Success");
       navigation.navigate("Login");
     } catch (error: any) {
-      Alert.alert("Signup Error", error.message);
+      if (error.code === "auth/email-already-in-use") {
+        Alert.alert("Signup Error", "This email is already in use.");
+      } else {
+        Alert.alert("Signup Error", error.message);
+      }
     }
   };
 
